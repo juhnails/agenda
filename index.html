@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juh Nails Pro V18</title>
+    <title>Juh Nails Pro V19</title>
     <style>
         :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --ocupado: #E1BEE7; --badge: #D32F2F; --wzap: #25D366; --fin: #2E7D32; --grid: #ccc; }
         body { font-family: sans-serif; background: var(--fundo); color: var(--txt); padding: 5px; margin:0; }
@@ -21,7 +21,6 @@
         .badge-day { position: absolute; top: -5px; right: -5px; background: #D32F2F; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .empty-day { background: transparent; border: none; cursor: default; }
 
-        /* FINANCEIRO */
         .fin-card { background: var(--fin); color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .fin-val { font-size: 24px; font-weight: bold; }
         .fin-filters { display: flex; gap: 5px; margin-bottom: 15px; }
@@ -169,7 +168,16 @@
         if (diaParaReabrir) abrirDia(diaParaReabrir);
     }
 
-    // --- CORREÇÃO DA SOMA DE VALORES ---
+    // --- FUNÇÕES DE AUXILIO FINANCEIRO ---
+    function parseValor(val) {
+        if (typeof val === 'number') return val;
+        let v = String(val).replace('R$', '').trim();
+        if (v.includes(',') && v.includes('.')) v = v.replace(/\./g, '').replace(',', '.');
+        else if (v.includes(',')) v = v.replace(',', '.');
+        return parseFloat(v) || 0;
+    }
+
+    // --- LÓGICA DE CLIENTES COM SOMA CORRIGIDA ---
     function abrirDetalheCliente(nome, whats) {
         document.getElementById('detalheCliente').classList.remove('hidden');
         document.getElementById('titDetalhe').innerText = "Editar Cliente";
@@ -178,15 +186,10 @@
         document.getElementById('edit-cli-nome').style.background = "#eee";
         document.getElementById('edit-cli-whats').value = whats;
         
-        const h = db.agenda.filter(a => a[0] === nome).sort((a,b) => new Date(b[3]) - new Date(a[3]));
+        const nomeAlvo = nome.trim().toLowerCase();
+        const h = db.agenda.filter(a => String(a[0]).trim().toLowerCase() === nomeAlvo).sort((a,b) => new Date(b[3]) - new Date(a[3]));
         
-        // CORREÇÃO: Remove 'R$', espaços e substitui vírgula por ponto
-        let totalVal = h.reduce((acc, item) => {
-            let vStr = String(item[2]).replace('R$', '').trim(); 
-            if(vStr.includes(',')) vStr = vStr.replace('.', '').replace(',', '.');
-            let v = parseFloat(vStr) || 0;
-            return acc + v;
-        }, 0);
+        let totalVal = h.reduce((acc, item) => acc + parseValor(item[2]), 0);
 
         document.getElementById('stat-gasto').innerText = `R$ ${totalVal.toFixed(2).replace('.', ',')}`;
         document.getElementById('stat-qtd').innerText = h.length;
@@ -204,14 +207,46 @@
             </div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
     }
 
+    // --- VISUALIZACAO DIA TIPO PLANILHA ---
+    function abrirDia(dia) {
+        document.getElementById('modalDia').style.display = 'block';
+        document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`;
+        const container = document.getElementById('listaSlots'); container.innerHTML = "";
+        const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; });
+        let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0);
+        let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0);
+
+        while (horaAtual < fimDoDia) {
+            let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; });
+            let htmlSlot = "";
+            
+            if (ocupante) {
+                let corFundo = gerarCor(ocupante[0]);
+                htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}">
+                    <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span>
+                    <div style="display:flex; gap:5px; align-items:center">
+                        <button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button>
+                        <button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button>
+                    </div>
+                </div>`;
+            } else {
+                let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
+                htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕</button>`;
+            }
+            container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`;
+            horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000);
+        }
+    }
+
+    // --- FUNÇÕES GERAIS ---
     function gerarCor(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);let c='#';for(let i=0;i<3;i++)c+=('00'+Math.floor(((h>>(i*8))&0xFF)+300)/2).toString(16).substr(-2);return c}
-    function abrirDia(dia) { document.getElementById('modalDia').style.display = 'block'; document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`; const container = document.getElementById('listaSlots'); container.innerHTML = ""; const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }); let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0); let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0); while (horaAtual < fimDoDia) { let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; }); let htmlSlot = ""; if (ocupante) { let corFundo = gerarCor(ocupante[0]); htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}"><span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span><div style="display:flex; gap:5px; align-items:center"><button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button><button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button></div></div>`; } else { let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16); htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕ Agendar</button>`; } container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`; horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000); } }
     function renderizarMeses(){const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('')}
     function mudarMes(i){mesAtual=i;switchView('view-cal');renderizarMeses();renderizarCalendario(i)}
     function renderizarCalendario(m){const g=document.getElementById('gridDias');g.innerHTML="";document.getElementById('tituloMes').innerText=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m];const p=new Date(anoAtual,m,1).getDay();const d=new Date(anoAtual,m+1,0).getDate();for(let i=0;i<p;i++){g.innerHTML+=`<div class="empty-day"></div>`}for(let i=1;i<=d;i++){let c=db.agenda.filter(a=>{let x=new Date(a[3]);return x.getDate()===i&&x.getMonth()===m&&x.getFullYear()===anoAtual}).length;g.innerHTML+=`<div class="cal-day ${c>0?'has-event':''}" onclick="abrirDia(${i})">${i} ${c>0?`<div class="badge-day">${c}</div>`:''}</div>`}}
     function renderizarListaClientes(){const b=document.getElementById('buscaCli').value.toLowerCase();document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item"><span style="flex:1;cursor:pointer;font-weight:bold" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')">${c[0]}</span><button class="btn-quick-book" onclick="abrirBooking(null,'${c[0]}','${c[1]}')">📅</button></div>`).join('')}
     function renderizarConfig(){document.getElementById('msg-conf').value=db.config[0][1];document.getElementById('msg-lemb').value=db.config[1][1];document.getElementById('a-ser').innerHTML=db.servicos.map(s=>`<option value="${s[0]}" data-p="${s[1]}" data-d="${s[2]}">${s[0]}</option>`).join('');document.getElementById('l-cli').innerHTML=db.clientes.map(c=>`<option value="${c[0]}">`).join('');document.getElementById('list-ser').innerHTML=db.servicos.map(s=>`<div style="border-bottom:1px solid #eee; padding:5px; font-size:12px; display:flex; justify-content:space-between"><span>${s[0]}</span><div><button onclick="edSer('${s[0]}',${s[1]},${s[2]})" style="font-size:10px;padding:2px 5px">ED</button><button onclick="excluirServico('${s[0]}')" style="font-size:10px;padding:2px 5px;background:none;border:none;cursor:pointer">🗑️</button></div></div>`).join('');autoPreco()}
-    function filtroFin(p){document.querySelectorAll('.btn-fin').forEach(b=>b.classList.remove('active'));document.getElementById('btn-fin-'+p).classList.add('active');let t=0,c=0,l=[],now=new Date();db.agenda.forEach(a=>{let d=new Date(a[3]),v=parseFloat(String(a[2]).replace('R$','').replace(',','.').trim())||0,inc=false;if(p==='ano'&&d.getFullYear()===now.getFullYear())inc=true;if(p==='mes'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear())inc=true;if(p==='semana'){let diff=(d-now)/(1000*60*60*24);if(diff>-7&&diff<7)inc=true}if(inc){t+=v;c++;l.push({d:d,v:v,c:a[0]})}});document.getElementById('fin-total-rs').innerText=`R$ ${t.toFixed(2).replace('.',',')}`;document.getElementById('fin-total-qtd').innerText=c;l.sort((a,b)=>b.d-a.d);document.getElementById('fin-lista').innerHTML=l.map(i=>`<div class="fin-list-item"><span>${i.d.toLocaleDateString()} - ${i.c}</span><strong>R$ ${i.v}</strong></div>`).join('')}
+    function filtroFin(p){document.querySelectorAll('.btn-fin').forEach(b=>b.classList.remove('active'));document.getElementById('btn-fin-'+p).classList.add('active');let t=0,c=0,l=[],now=new Date();db.agenda.forEach(a=>{let d=new Date(a[3]),v=parseValor(a[2]),inc=false;if(p==='ano'&&d.getFullYear()===now.getFullYear())inc=true;if(p==='mes'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear())inc=true;if(p==='semana'){let diff=(d-now)/(1000*60*60*24);if(diff>-7&&diff<7)inc=true}if(inc){t+=v;c++;l.push({d:d,v:v,c:a[0]})}});document.getElementById('fin-total-rs').innerText=`R$ ${t.toFixed(2).replace('.',',')}`;document.getElementById('fin-total-qtd').innerText=c;l.sort((a,b)=>b.d-a.d);document.getElementById('fin-lista').innerHTML=l.map(i=>`<div class="fin-list-item"><span>${i.d.toLocaleDateString()} - ${i.c}</span><strong>R$ ${i.v.toFixed(2).replace('.',',')}</strong></div>`).join('')}
 
     function abrirNovoCliente(){document.getElementById('detalheCliente').classList.remove('hidden');document.getElementById('titDetalhe').innerText="Novo Cadastro";document.getElementById('edit-cli-nome').value="";document.getElementById('edit-cli-nome').removeAttribute('readonly');document.getElementById('edit-cli-nome').style.background="white";document.getElementById('edit-cli-whats').value="";document.getElementById('historicoCliente').innerHTML="";document.getElementById('stat-gasto').innerText="R$ 0,00";document.getElementById('stat-qtd').innerText="0"}
     function fecharDia(){document.getElementById('modalDia').style.display='none'}
