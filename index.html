@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juh Nails Pro V20</title>
+    <title>Juh Nails Pro V21</title>
     <style>
         :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --ocupado: #E1BEE7; --badge: #D32F2F; --wzap: #25D366; --fin: #2E7D32; --grid: #ccc; }
         body { font-family: sans-serif; background: var(--fundo); color: var(--txt); padding: 5px; margin:0; }
@@ -35,13 +35,14 @@
         .slot-row:nth-child(even) { background: #f9f9f9; }
         .slot-time { width: 50px; font-weight: bold; font-size: 12px; color: #555; border-right: 2px solid var(--grid); display: flex; align-items: center; justify-content: center; height: 100%; background: #eee; }
         .slot-content { flex: 1; padding: 0 5px; display: flex; align-items: center; height: 100%; }
-        
         .slot-ocupado { padding: 4px; border-radius: 3px; color: #333; width: 100%; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.1); }
+        
         .btn-agendar-mini { background: none; border: 1px solid #ccc; color: #888; border-radius: 3px; padding: 2px 8px; font-size: 10px; cursor: pointer; width: 100%; text-align: left; }
         .btn-agendar-mini:hover { background: #e8f5e9; color: green; border-color: green; }
         .btn-zap { background: var(--wzap); color: white; border: none; padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 5px; }
         .btn-trash { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; }
         .btn-trash:hover { opacity: 1; color: red; transform: scale(1.1); }
+        .btn-full { width:100%; padding:10px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; color:white; }
 
         .client-stats { display: flex; gap: 10px; background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90CAF9; }
         .stat-box { flex: 1; text-align: center; }
@@ -93,15 +94,16 @@
                     <div style="width:1px; background:#90CAF9"></div>
                     <div class="stat-box"><div class="stat-label">Agendamentos</div><div class="stat-val" id="stat-qtd">0</div></div>
                 </div>
+                
                 <input type="text" id="edit-cli-nome" readonly style="background:#eee">
                 <input type="text" id="edit-cli-whats" placeholder="WhatsApp">
                 
-                <div style="display:flex; gap:5px">
-                    <button onclick="salvarEdicaoCliente()" style="flex:1; background:#4caf50; color:white; padding:8px; border:none; border-radius:5px; cursor:pointer">💾 Salvar</button>
-                    <button onclick="agendarParaCliente()" style="flex:1; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px; cursor:pointer">📅 Novo Agendamento</button>
+                <div style="display:flex; gap:5px; margin-top:5px">
+                    <button onclick="salvarEdicaoCliente()" class="btn-full" style="background:#4caf50;">💾 Salvar</button>
+                    <button onclick="agendarParaCliente()" class="btn-full" style="background:var(--pri);">📅 Agendar</button>
                 </div>
 
-                <h5 style="margin:10px 0 5px; color:#666">Histórico:</h5>
+                <h5 style="margin:15px 0 5px; color:#666">Histórico:</h5>
                 <div id="historicoCliente" style="max-height:150px; overflow-y:auto;"></div>
             </div>
         </div>
@@ -122,12 +124,12 @@
 
         <div id="view-conf" class="hidden">
             <h4>Serviços</h4>
-            <input type="hidden" id="s-antigo"><input type="text" id="s-nome" placeholder="Serviço"><div style="display:flex; gap:5px"><input type="number" id="s-preco" placeholder="R$"><input type="number" id="s-dur-base" placeholder="Min"></div><button onclick="salvarSer()" style="width:100%; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px">SALVAR SERVIÇO</button>
+            <input type="hidden" id="s-antigo"><input type="text" id="s-nome" placeholder="Serviço"><div style="display:flex; gap:5px"><input type="number" id="s-preco" placeholder="R$"><input type="number" id="s-dur-base" placeholder="Min"></div><button onclick="salvarSer()" class="btn-full" style="background:var(--pri)">SALVAR SERVIÇO</button>
             <div id="list-ser" style="margin-top:10px; max-height:200px; overflow-y:auto"></div>
             <hr>
             <h4>Mensagens</h4>
-            <textarea id="msg-conf" rows="2"></textarea><button onclick="salvarMsg('Confirmacao')" style="width:100%; background:var(--pri); color:white; padding:5px; border:none; border-radius:5px; margin-bottom:5px">Salvar Confirmação</button>
-            <textarea id="msg-lemb" rows="2"></textarea><button onclick="salvarMsg('Lembrete')" style="width:100%; background:var(--pri); color:white; padding:5px; border:none; border-radius:5px">Salvar Lembrete</button>
+            <textarea id="msg-conf" rows="2"></textarea><button onclick="salvarMsg('Confirmacao')" class="btn-full" style="background:var(--pri); margin-bottom:5px">Salvar Confirmação</button>
+            <textarea id="msg-lemb" rows="2"></textarea><button onclick="salvarMsg('Lembrete')" class="btn-full" style="background:var(--pri)">Salvar Lembrete</button>
         </div>
 
         <div id="modalDia" class="day-modal">
@@ -151,8 +153,8 @@
     <div style="display:flex; gap:5px"><input type="number" id="a-val" placeholder="R$"><input type="number" id="a-dur" placeholder="Min"></div>
     <label style="font-size:10px">Data/Hora:</label>
     <input type="datetime-local" id="a-data">
-    <button onclick="salvarAge()" style="width:100%; background:var(--pri); color:white; padding:10px; border:none; border-radius:5px; margin-top:10px">CONFIRMAR</button>
-    <button onclick="fecharBooking()" style="width:100%; background:#ccc; padding:5px; border:none; border-radius:5px; margin-top:5px">CANCELAR</button>
+    <button onclick="salvarAge()" class="btn-full" style="background:var(--pri); margin-top:10px">CONFIRMAR</button>
+    <button onclick="fecharBooking()" class="btn-full" style="background:#ccc; padding:5px; border:none; border-radius:5px; margin-top:5px; color:black">CANCELAR</button>
 </div>
 
 <script>
@@ -173,14 +175,17 @@
         if (diaParaReabrir) abrirDia(diaParaReabrir);
     }
 
+    // --- FUNÇÕES DE AUXILIO FINANCEIRO ---
     function parseValor(val) {
         if (typeof val === 'number') return val;
         let v = String(val).replace('R$', '').trim();
+        // Lida com formatação PT-BR (1.000,00)
         if (v.includes(',') && v.includes('.')) v = v.replace(/\./g, '').replace(',', '.');
         else if (v.includes(',')) v = v.replace(',', '.');
         return parseFloat(v) || 0;
     }
 
+    // --- LÓGICA DE CLIENTES ATUALIZADA ---
     function abrirDetalheCliente(nome, whats) {
         document.getElementById('detalheCliente').classList.remove('hidden');
         document.getElementById('titDetalhe').innerText = "Editar Cliente";
@@ -189,9 +194,11 @@
         document.getElementById('edit-cli-nome').style.background = "#eee";
         document.getElementById('edit-cli-whats').value = whats;
         
+        // Filtra agenda pelo nome (case insensitive)
         const nomeAlvo = nome.trim().toLowerCase();
         const h = db.agenda.filter(a => String(a[0]).trim().toLowerCase() === nomeAlvo).sort((a,b) => new Date(b[3]) - new Date(a[3]));
         
+        // Calcula Totais
         let totalVal = h.reduce((acc, item) => acc + parseValor(item[2]), 0);
 
         document.getElementById('stat-gasto').innerText = `R$ ${totalVal.toFixed(2).replace('.', ',')}`;
@@ -210,12 +217,15 @@
             </div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
     }
 
+    // --- AGENDAR DIRETO DO CLIENTE ---
     function agendarParaCliente() {
         let nome = document.getElementById('edit-cli-nome').value;
         let whats = document.getElementById('edit-cli-whats').value;
+        if(!nome) return alert("Selecione um cliente primeiro.");
         abrirBooking(null, nome, whats);
     }
 
+    // --- MANTENDO LÓGICA DE CALENDÁRIO E OUTROS ---
     function gerarCor(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);let c='#';for(let i=0;i<3;i++)c+=('00'+Math.floor(((h>>(i*8))&0xFF)+300)/2).toString(16).substr(-2);return c}
     function abrirDia(dia) { document.getElementById('modalDia').style.display = 'block'; document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`; const container = document.getElementById('listaSlots'); container.innerHTML = ""; const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }); let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0); let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0); while (horaAtual < fimDoDia) { let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; }); let htmlSlot = ""; if (ocupante) { let corFundo = gerarCor(ocupante[0]); htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}"><span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span><div style="display:flex; gap:5px; align-items:center"><button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button><button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button></div></div>`; } else { let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16); htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕ Agendar</button>`; } container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`; horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000); } }
     function renderizarMeses(){const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('')}
