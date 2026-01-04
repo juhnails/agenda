@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juh Nails Pro V19</title>
+    <title>Juh Nails Pro V20</title>
     <style>
         :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --ocupado: #E1BEE7; --badge: #D32F2F; --wzap: #25D366; --fin: #2E7D32; --grid: #ccc; }
         body { font-family: sans-serif; background: var(--fundo); color: var(--txt); padding: 5px; margin:0; }
@@ -47,9 +47,8 @@
         .stat-box { flex: 1; text-align: center; }
         .stat-label { font-size: 10px; text-transform: uppercase; color: #1565C0; font-weight: bold; }
         .stat-val { font-size: 18px; font-weight: bold; color: #0D47A1; }
-        .client-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .client-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .client-item:hover { background: #f0f0f0; }
-        .btn-quick-book { background: var(--pri); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-left: 5px; }
         .history-item { background: #f9f9f9; padding: 8px; margin-bottom: 5px; border-radius: 5px; border-left: 3px solid var(--pri); font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
         .booking-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.3); z-index: 20; width: 300px; }
@@ -87,6 +86,7 @@
                 <button onclick="abrirNovoCliente()" style="width:auto; background:var(--pri); color:white; border:none; border-radius:5px; font-size:12px; padding:0 10px">➕</button>
             </div>
             <div id="listaDeClientes" style="max-height: 200px; overflow-y: auto;"></div>
+            
             <div id="detalheCliente" class="hidden" style="margin-top:15px; border-top:2px solid var(--sec); padding-top:10px;">
                 <div class="client-stats">
                     <div class="stat-box"><div class="stat-label">Total Gasto</div><div class="stat-val" id="stat-gasto">R$ 0,00</div></div>
@@ -95,7 +95,12 @@
                 </div>
                 <input type="text" id="edit-cli-nome" readonly style="background:#eee">
                 <input type="text" id="edit-cli-whats" placeholder="WhatsApp">
-                <button onclick="salvarEdicaoCliente()" style="width:100%; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px">SALVAR DADOS</button>
+                
+                <div style="display:flex; gap:5px">
+                    <button onclick="salvarEdicaoCliente()" style="flex:1; background:#4caf50; color:white; padding:8px; border:none; border-radius:5px; cursor:pointer">💾 Salvar</button>
+                    <button onclick="agendarParaCliente()" style="flex:1; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px; cursor:pointer">📅 Novo Agendamento</button>
+                </div>
+
                 <h5 style="margin:10px 0 5px; color:#666">Histórico:</h5>
                 <div id="historicoCliente" style="max-height:150px; overflow-y:auto;"></div>
             </div>
@@ -168,7 +173,6 @@
         if (diaParaReabrir) abrirDia(diaParaReabrir);
     }
 
-    // --- FUNÇÕES DE AUXILIO FINANCEIRO ---
     function parseValor(val) {
         if (typeof val === 'number') return val;
         let v = String(val).replace('R$', '').trim();
@@ -177,7 +181,6 @@
         return parseFloat(v) || 0;
     }
 
-    // --- LÓGICA DE CLIENTES COM SOMA CORRIGIDA ---
     function abrirDetalheCliente(nome, whats) {
         document.getElementById('detalheCliente').classList.remove('hidden');
         document.getElementById('titDetalhe').innerText = "Editar Cliente";
@@ -207,44 +210,18 @@
             </div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
     }
 
-    // --- VISUALIZACAO DIA TIPO PLANILHA ---
-    function abrirDia(dia) {
-        document.getElementById('modalDia').style.display = 'block';
-        document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`;
-        const container = document.getElementById('listaSlots'); container.innerHTML = "";
-        const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; });
-        let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0);
-        let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0);
-
-        while (horaAtual < fimDoDia) {
-            let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; });
-            let htmlSlot = "";
-            
-            if (ocupante) {
-                let corFundo = gerarCor(ocupante[0]);
-                htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}">
-                    <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span>
-                    <div style="display:flex; gap:5px; align-items:center">
-                        <button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button>
-                        <button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button>
-                    </div>
-                </div>`;
-            } else {
-                let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
-                htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕</button>`;
-            }
-            container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`;
-            horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000);
-        }
+    function agendarParaCliente() {
+        let nome = document.getElementById('edit-cli-nome').value;
+        let whats = document.getElementById('edit-cli-whats').value;
+        abrirBooking(null, nome, whats);
     }
 
-    // --- FUNÇÕES GERAIS ---
     function gerarCor(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);let c='#';for(let i=0;i<3;i++)c+=('00'+Math.floor(((h>>(i*8))&0xFF)+300)/2).toString(16).substr(-2);return c}
+    function abrirDia(dia) { document.getElementById('modalDia').style.display = 'block'; document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`; const container = document.getElementById('listaSlots'); container.innerHTML = ""; const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }); let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0); let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0); while (horaAtual < fimDoDia) { let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; }); let htmlSlot = ""; if (ocupante) { let corFundo = gerarCor(ocupante[0]); htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}"><span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span><div style="display:flex; gap:5px; align-items:center"><button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button><button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button></div></div>`; } else { let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16); htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕ Agendar</button>`; } container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`; horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000); } }
     function renderizarMeses(){const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('')}
     function mudarMes(i){mesAtual=i;switchView('view-cal');renderizarMeses();renderizarCalendario(i)}
     function renderizarCalendario(m){const g=document.getElementById('gridDias');g.innerHTML="";document.getElementById('tituloMes').innerText=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m];const p=new Date(anoAtual,m,1).getDay();const d=new Date(anoAtual,m+1,0).getDate();for(let i=0;i<p;i++){g.innerHTML+=`<div class="empty-day"></div>`}for(let i=1;i<=d;i++){let c=db.agenda.filter(a=>{let x=new Date(a[3]);return x.getDate()===i&&x.getMonth()===m&&x.getFullYear()===anoAtual}).length;g.innerHTML+=`<div class="cal-day ${c>0?'has-event':''}" onclick="abrirDia(${i})">${i} ${c>0?`<div class="badge-day">${c}</div>`:''}</div>`}}
-    function renderizarListaClientes(){const b=document.getElementById('buscaCli').value.toLowerCase();document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item"><span style="flex:1;cursor:pointer;font-weight:bold" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')">${c[0]}</span><button class="btn-quick-book" onclick="abrirBooking(null,'${c[0]}','${c[1]}')">📅</button></div>`).join('')}
+    function renderizarListaClientes(){const b=document.getElementById('buscaCli').value.toLowerCase();document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')"><span style="flex:1;cursor:pointer;font-weight:bold">${c[0]}</span></div>`).join('')}
     function renderizarConfig(){document.getElementById('msg-conf').value=db.config[0][1];document.getElementById('msg-lemb').value=db.config[1][1];document.getElementById('a-ser').innerHTML=db.servicos.map(s=>`<option value="${s[0]}" data-p="${s[1]}" data-d="${s[2]}">${s[0]}</option>`).join('');document.getElementById('l-cli').innerHTML=db.clientes.map(c=>`<option value="${c[0]}">`).join('');document.getElementById('list-ser').innerHTML=db.servicos.map(s=>`<div style="border-bottom:1px solid #eee; padding:5px; font-size:12px; display:flex; justify-content:space-between"><span>${s[0]}</span><div><button onclick="edSer('${s[0]}',${s[1]},${s[2]})" style="font-size:10px;padding:2px 5px">ED</button><button onclick="excluirServico('${s[0]}')" style="font-size:10px;padding:2px 5px;background:none;border:none;cursor:pointer">🗑️</button></div></div>`).join('');autoPreco()}
     function filtroFin(p){document.querySelectorAll('.btn-fin').forEach(b=>b.classList.remove('active'));document.getElementById('btn-fin-'+p).classList.add('active');let t=0,c=0,l=[],now=new Date();db.agenda.forEach(a=>{let d=new Date(a[3]),v=parseValor(a[2]),inc=false;if(p==='ano'&&d.getFullYear()===now.getFullYear())inc=true;if(p==='mes'&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear())inc=true;if(p==='semana'){let diff=(d-now)/(1000*60*60*24);if(diff>-7&&diff<7)inc=true}if(inc){t+=v;c++;l.push({d:d,v:v,c:a[0]})}});document.getElementById('fin-total-rs').innerText=`R$ ${t.toFixed(2).replace('.',',')}`;document.getElementById('fin-total-qtd').innerText=c;l.sort((a,b)=>b.d-a.d);document.getElementById('fin-lista').innerHTML=l.map(i=>`<div class="fin-list-item"><span>${i.d.toLocaleDateString()} - ${i.c}</span><strong>R$ ${i.v.toFixed(2).replace('.',',')}</strong></div>`).join('')}
 
