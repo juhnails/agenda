@@ -3,25 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juh Nails Pro V16</title>
+    <title>Juh Nails Pro V17</title>
     <style>
-        :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --ocupado: #E1BEE7; --badge: #D32F2F; --wzap: #25D366; --grid: #ccc; }
+        :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --wzap: #25D366; --fin: #2E7D32; --grid: #ccc; }
         body { font-family: sans-serif; background: var(--fundo); color: var(--txt); padding: 5px; margin:0; }
-        
         .main-layout { display: flex; gap: 10px; height: 98vh; }
         .sidebar { width: 100px; background: white; border-radius: 10px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         .workspace { flex: 1; background: white; border-radius: 10px; padding: 15px; overflow-y: auto; position: relative; }
-        
         .month-btn { padding: 10px 5px; border: none; background: #eee; border-radius: 5px; cursor: pointer; text-align: left; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
         .month-btn.active { background: var(--pri); color: white; font-weight: bold; }
         .badge { background: #D32F2F; color: white; border-radius: 10px; padding: 2px 6px; font-size: 9px; font-weight: bold; min-width: 15px; text-align: center; }
         
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
-        .cal-day { padding: 12px 2px; border: 1px solid #eee; border-radius: 5px; cursor: pointer; font-size: 12px; position: relative; }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 5px; color: var(--pri); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .cal-day { padding: 8px 2px; border: 1px solid #eee; border-radius: 5px; cursor: pointer; font-size: 12px; position: relative; min-height: 25px; }
         .has-event { background: #f3e5f5; font-weight: bold; border-color: var(--pri); }
         .badge-day { position: absolute; top: -5px; right: -5px; background: #D32F2F; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        .empty-day { background: transparent; border: none; cursor: default; }
 
-        /* VISUAL DE PLANILHA (DIA) */
+        /* FINANCEIRO */
+        .fin-card { background: var(--fin); color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .fin-val { font-size: 24px; font-weight: bold; }
+        .fin-filters { display: flex; gap: 5px; margin-bottom: 15px; }
+        .btn-fin { flex: 1; padding: 8px; border: 1px solid var(--fin); background: white; color: var(--fin); cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .btn-fin.active { background: var(--fin); color: white; }
+        .fin-list-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+
         .day-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10; padding: 15px; box-sizing: border-box; overflow-y: auto; }
         .sheet-container { border: 1px solid var(--grid); border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .slot-row { display: flex; align-items: center; border-bottom: 1px solid var(--grid); min-height: 35px; }
@@ -33,28 +40,21 @@
         .slot-ocupado { padding: 4px; border-radius: 3px; color: #333; width: 100%; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.1); }
         .btn-agendar-mini { background: none; border: 1px solid #ccc; color: #888; border-radius: 3px; padding: 2px 8px; font-size: 10px; cursor: pointer; width: 100%; text-align: left; }
         .btn-agendar-mini:hover { background: #e8f5e9; color: green; border-color: green; }
-
-        /* AÇÕES */
         .btn-zap { background: var(--wzap); color: white; border: none; padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 5px; }
         .btn-trash { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; }
         .btn-trash:hover { opacity: 1; color: red; transform: scale(1.1); }
 
-        /* CLIENTES E ESTATISTICAS */
-        .client-stats { display: flex; gap: 10px; background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90CAF9; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .client-stats { display: flex; gap: 10px; background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90CAF9; }
         .stat-box { flex: 1; text-align: center; }
         .stat-label { font-size: 10px; text-transform: uppercase; color: #1565C0; font-weight: bold; }
         .stat-val { font-size: 18px; font-weight: bold; color: #0D47A1; }
-
         .client-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
         .client-item:hover { background: #f0f0f0; }
         .btn-quick-book { background: var(--pri); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-left: 5px; }
-        
         .history-item { background: #f9f9f9; padding: 8px; margin-bottom: 5px; border-radius: 5px; border-left: 3px solid var(--pri); font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
-        /* MODAIS */
         .booking-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.3); z-index: 20; width: 300px; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 15; }
-
         input, select, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .tab-nav { display:flex; gap:5px; margin-bottom:10px; }
         .nav-btn { flex:1; padding:8px; border:none; background:#eee; cursor:pointer; border-radius: 5px; font-size: 11px; }
@@ -78,6 +78,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h3 id="tituloMes" style="margin:0"></h3><small id="tituloAno">2026</small>
             </div>
+            <div class="cal-weekdays"><div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div></div>
             <div class="cal-grid" id="gridDias"></div>
         </div>
 
@@ -87,7 +88,6 @@
                 <button onclick="abrirNovoCliente()" style="width:auto; background:var(--pri); color:white; border:none; border-radius:5px; font-size:12px; padding:0 10px">➕</button>
             </div>
             <div id="listaDeClientes" style="max-height: 200px; overflow-y: auto;"></div>
-            
             <div id="detalheCliente" class="hidden" style="margin-top:15px; border-top:2px solid var(--sec); padding-top:10px;">
                 <div class="client-stats">
                     <div class="stat-box"><div class="stat-label">Total Gasto</div><div class="stat-val" id="stat-gasto">R$ 0</div></div>
@@ -103,7 +103,17 @@
         </div>
 
         <div id="view-fin" class="hidden">
-            <p style="text-align:center; color:#666">Resumo financeiro disponível na versão completa.</p>
+            <div class="fin-filters">
+                <button class="btn-fin" onclick="filtroFin('semana')" id="btn-fin-semana">Semana</button>
+                <button class="btn-fin active" onclick="filtroFin('mes')" id="btn-fin-mes">Mês</button>
+                <button class="btn-fin" onclick="filtroFin('ano')" id="btn-fin-ano">Ano</button>
+            </div>
+            <div class="fin-card">
+                <div style="font-size:12px; opacity:0.8">Faturamento Estimado</div>
+                <div class="fin-val" id="fin-total-rs">R$ 0,00</div>
+                <div style="font-size:12px; margin-top:5px">Atendimentos: <span id="fin-total-qtd">0</span></div>
+            </div>
+            <div id="fin-lista" style="max-height:300px; overflow-y:auto"></div>
         </div>
 
         <div id="view-conf" class="hidden">
@@ -142,151 +152,7 @@
 </div>
 
 <script>
-    const URL_API = "<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juh Nails Pro V16</title>
-    <style>
-        :root { --pri: #6A1B9A; --sec: #E1BEE7; --fundo: #F3E5F5; --txt: #4A148C; --ocupado: #E1BEE7; --badge: #D32F2F; --wzap: #25D366; --grid: #ccc; }
-        body { font-family: sans-serif; background: var(--fundo); color: var(--txt); padding: 5px; margin:0; }
-        
-        .main-layout { display: flex; gap: 10px; height: 98vh; }
-        .sidebar { width: 100px; background: white; border-radius: 10px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .workspace { flex: 1; background: white; border-radius: 10px; padding: 15px; overflow-y: auto; position: relative; }
-        
-        .month-btn { padding: 10px 5px; border: none; background: #eee; border-radius: 5px; cursor: pointer; text-align: left; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
-        .month-btn.active { background: var(--pri); color: white; font-weight: bold; }
-        .badge { background: #D32F2F; color: white; border-radius: 10px; padding: 2px 6px; font-size: 9px; font-weight: bold; min-width: 15px; text-align: center; }
-        
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
-        .cal-day { padding: 12px 2px; border: 1px solid #eee; border-radius: 5px; cursor: pointer; font-size: 12px; position: relative; }
-        .has-event { background: #f3e5f5; font-weight: bold; border-color: var(--pri); }
-        .badge-day { position: absolute; top: -5px; right: -5px; background: #D32F2F; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: flex; align-items: center; justify-content: center; z-index: 2; }
-
-        /* VISUAL DE PLANILHA (DIA) */
-        .day-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .sheet-container { border: 1px solid var(--grid); border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        .slot-row { display: flex; align-items: center; border-bottom: 1px solid var(--grid); min-height: 35px; }
-        .slot-row:last-child { border-bottom: none; }
-        .slot-row:nth-child(even) { background: #f9f9f9; }
-        .slot-time { width: 50px; font-weight: bold; font-size: 12px; color: #555; border-right: 2px solid var(--grid); display: flex; align-items: center; justify-content: center; height: 100%; background: #eee; }
-        .slot-content { flex: 1; padding: 0 5px; display: flex; align-items: center; height: 100%; }
-        
-        .slot-ocupado { padding: 4px; border-radius: 3px; color: #333; width: 100%; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.1); }
-        .btn-agendar-mini { background: none; border: 1px solid #ccc; color: #888; border-radius: 3px; padding: 2px 8px; font-size: 10px; cursor: pointer; width: 100%; text-align: left; }
-        .btn-agendar-mini:hover { background: #e8f5e9; color: green; border-color: green; }
-
-        /* AÇÕES */
-        .btn-zap { background: var(--wzap); color: white; border: none; padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 5px; }
-        .btn-trash { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; }
-        .btn-trash:hover { opacity: 1; color: red; transform: scale(1.1); }
-
-        /* CLIENTES E ESTATISTICAS */
-        .client-stats { display: flex; gap: 10px; background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90CAF9; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .stat-box { flex: 1; text-align: center; }
-        .stat-label { font-size: 10px; text-transform: uppercase; color: #1565C0; font-weight: bold; }
-        .stat-val { font-size: 18px; font-weight: bold; color: #0D47A1; }
-
-        .client-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .client-item:hover { background: #f0f0f0; }
-        .btn-quick-book { background: var(--pri); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-left: 5px; }
-        
-        .history-item { background: #f9f9f9; padding: 8px; margin-bottom: 5px; border-radius: 5px; border-left: 3px solid var(--pri); font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
-
-        /* MODAIS */
-        .booking-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.3); z-index: 20; width: 300px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 15; }
-
-        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .tab-nav { display:flex; gap:5px; margin-bottom:10px; }
-        .nav-btn { flex:1; padding:8px; border:none; background:#eee; cursor:pointer; border-radius: 5px; font-size: 11px; }
-        .nav-btn.active { background:var(--pri); color:white; }
-        .hidden { display:none; }
-    </style>
-</head>
-<body>
-
-<div class="main-layout">
-    <div class="sidebar" id="listaMeses"></div>
-    <div class="workspace">
-        <div class="tab-nav">
-            <button class="nav-btn active" onclick="switchView('view-cal')">📅 Agenda</button>
-            <button class="nav-btn" onclick="switchView('view-cli')">👥 Clientes</button>
-            <button class="nav-btn" onclick="switchView('view-fin')">💰 Financeiro</button>
-            <button class="nav-btn" onclick="switchView('view-conf')">⚙️ Ajustes</button>
-        </div>
-
-        <div id="view-cal">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 id="tituloMes" style="margin:0"></h3><small id="tituloAno">2026</small>
-            </div>
-            <div class="cal-grid" id="gridDias"></div>
-        </div>
-
-        <div id="view-cli" class="hidden">
-            <div style="display:flex; gap:5px; margin-bottom:5px">
-                <input type="text" id="buscaCli" placeholder="🔍 Buscar..." oninput="renderizarListaClientes()" style="flex:1; margin:0">
-                <button onclick="abrirNovoCliente()" style="width:auto; background:var(--pri); color:white; border:none; border-radius:5px; font-size:12px; padding:0 10px">➕</button>
-            </div>
-            <div id="listaDeClientes" style="max-height: 200px; overflow-y: auto;"></div>
-            
-            <div id="detalheCliente" class="hidden" style="margin-top:15px; border-top:2px solid var(--sec); padding-top:10px;">
-                <div class="client-stats">
-                    <div class="stat-box"><div class="stat-label">Total Gasto</div><div class="stat-val" id="stat-gasto">R$ 0</div></div>
-                    <div style="width:1px; background:#90CAF9"></div>
-                    <div class="stat-box"><div class="stat-label">Agendamentos</div><div class="stat-val" id="stat-qtd">0</div></div>
-                </div>
-                <input type="text" id="edit-cli-nome" readonly style="background:#eee">
-                <input type="text" id="edit-cli-whats" placeholder="WhatsApp">
-                <button onclick="salvarEdicaoCliente()" style="width:100%; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px">SALVAR DADOS</button>
-                <h5 style="margin:10px 0 5px; color:#666">Histórico de Horários:</h5>
-                <div id="historicoCliente" style="max-height:150px; overflow-y:auto;"></div>
-            </div>
-        </div>
-
-        <div id="view-fin" class="hidden">
-            <p style="text-align:center; color:#666">Resumo financeiro disponível na versão completa.</p>
-        </div>
-
-        <div id="view-conf" class="hidden">
-            <h4>Serviços</h4>
-            <input type="hidden" id="s-antigo"><input type="text" id="s-nome" placeholder="Serviço"><div style="display:flex; gap:5px"><input type="number" id="s-preco" placeholder="R$"><input type="number" id="s-dur-base" placeholder="Min"></div><button onclick="salvarSer()" style="width:100%; background:var(--pri); color:white; padding:8px; border:none; border-radius:5px">SALVAR SERVIÇO</button>
-            <div id="list-ser" style="margin-top:10px; max-height:200px; overflow-y:auto"></div>
-            <hr>
-            <h4>Mensagens</h4>
-            <textarea id="msg-conf" rows="2"></textarea><button onclick="salvarMsg('Confirmacao')" style="width:100%; background:var(--pri); color:white; padding:5px; border:none; border-radius:5px; margin-bottom:5px">Salvar Confirmação</button>
-            <textarea id="msg-lemb" rows="2"></textarea><button onclick="salvarMsg('Lembrete')" style="width:100%; background:var(--pri); color:white; padding:5px; border:none; border-radius:5px">Salvar Lembrete</button>
-        </div>
-
-        <div id="modalDia" class="day-modal">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px">
-                <button onclick="fecharDia()" style="border:none; background:#eee; padding:5px 10px; border-radius:5px; cursor:pointer">⬅ Voltar</button>
-                <h3 id="tituloDia" style="margin:0; font-size:16px"></h3>
-                <button onclick="fecharDia()" style="border:none; background:#ccc; padding:5px 8px; border-radius:3px; cursor:pointer">✕</button>
-            </div>
-            <div id="listaSlots" class="sheet-container"></div>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="overlay"></div>
-<div class="booking-modal" id="modalBooking">
-    <h3 style="margin-top:0">Novo Agendamento</h3>
-    <input type="text" id="a-cli" list="l-cli" onblur="autoWhats()" placeholder="Cliente">
-    <datalist id="l-cli"></datalist>
-    <input type="text" id="a-whats" placeholder="WhatsApp">
-    <select id="a-ser" onchange="autoPreco()"></select>
-    <div style="display:flex; gap:5px"><input type="number" id="a-val" placeholder="R$"><input type="number" id="a-dur" placeholder="Min"></div>
-    <label style="font-size:10px">Data/Hora:</label>
-    <input type="datetime-local" id="a-data">
-    <button onclick="salvarAge()" style="width:100%; background:var(--pri); color:white; padding:10px; border:none; border-radius:5px; margin-top:10px">CONFIRMAR</button>
-    <button onclick="fecharBooking()" style="width:100%; background:#ccc; padding:5px; border:none; border-radius:5px; margin-top:5px">CANCELAR</button>
-</div>
-
-<script>
-    const URL_API = "SUA_URL_AQUI"; 
+    const URL_API = "https://script.google.com/macros/s/AKfycbzYCOlD_XFQwgpApyRx68sASAjEjjWPzMwdAFtRxgZKz8rTlIdqX5y1MwLIXYM1fx4i/exec"; 
     let db = { servicos: [], clientes: [], agenda: [], config: [] };
     let anoAtual = new Date().getFullYear();
     let mesAtual = new Date().getMonth();
@@ -299,13 +165,21 @@
         renderizarCalendario(mesAtual);
         renderizarConfig();
         renderizarListaClientes();
+        filtroFin('mes');
         if (diaParaReabrir) abrirDia(diaParaReabrir);
     }
 
-    function gerarCor(nome) {
-        let hash = 0; for (let i = 0; i < nome.length; i++) { hash = nome.charCodeAt(i) + ((hash << 5) - hash); }
-        let cor = '#'; for (let i = 0; i < 3; i++) { let value = (hash >> (i * 8)) & 0xFF; value = Math.floor((value + 300) / 2); cor += ('00' + value.toString(16)).substr(-2); }
-        return cor;
+    function renderizarCalendario(m) { 
+        const g = document.getElementById('gridDias'); 
+        g.innerHTML = ""; 
+        document.getElementById('tituloMes').innerText = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m]; 
+        const primeiroDiaSemana = new Date(anoAtual, m, 1).getDay();
+        const diasNoMes = new Date(anoAtual, m + 1, 0).getDate(); 
+        for(let i = 0; i < primeiroDiaSemana; i++) { g.innerHTML += `<div class="empty-day"></div>`; }
+        for(let i=1; i<=diasNoMes; i++){
+            let c = db.agenda.filter(a => { let x = new Date(a[3]); return x.getDate()===i && x.getMonth()===m && x.getFullYear()===anoAtual }).length;
+            g.innerHTML += `<div class="cal-day ${c>0?'has-event':''}" onclick="abrirDia(${i})">${i} ${c>0?`<div class="badge-day">${c}</div>`:''}</div>`;
+        } 
     }
 
     function abrirDia(dia) {
@@ -315,21 +189,13 @@
         const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; });
         let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0);
         let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0);
-
         while (horaAtual < fimDoDia) {
             let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; });
             let htmlSlot = "";
-            
             if (ocupante) {
                 let corFundo = gerarCor(ocupante[0]);
-                htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}">
-                    <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span>
-                    <div style="display:flex; gap:5px; align-items:center">
-                        <button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button>
-                        <button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button>
-                    </div>
-                </div>`;
+                htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}"><span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span><div style="display:flex; gap:5px; align-items:center"><button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button><button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button></div></div>`;
             } else {
                 let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
                 htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕</button>`;
@@ -339,7 +205,6 @@
         }
     }
 
-    // --- CLIENTES COM STATS E HISTÓRICO ---
     function abrirDetalheCliente(nome, whats) {
         document.getElementById('detalheCliente').classList.remove('hidden');
         document.getElementById('titDetalhe').innerText = "Editar Cliente";
@@ -347,159 +212,52 @@
         document.getElementById('edit-cli-nome').setAttribute('readonly', true);
         document.getElementById('edit-cli-nome').style.background = "#eee";
         document.getElementById('edit-cli-whats').value = whats;
-        
         const h = db.agenda.filter(a => a[0] === nome).sort((a,b) => new Date(b[3]) - new Date(a[3]));
-        
-        let totalVal = h.reduce((acc, item) => {
-            let v = parseFloat(String(item[2]).replace('R$','').trim()) || 0;
-            return acc + v;
-        }, 0);
-
+        let totalVal = h.reduce((acc, item) => { let v = parseFloat(String(item[2]).replace('R$','').trim()) || 0; return acc + v; }, 0);
         document.getElementById('stat-gasto').innerText = `R$ ${totalVal.toFixed(2)}`;
         document.getElementById('stat-qtd').innerText = h.length;
-
-        document.getElementById('historicoCliente').innerHTML = h.length ? h.map(x => `
-            <div class="history-item">
-                <div>
-                    <strong>${new Date(x[3]).toLocaleDateString()}</strong> - ${new Date(x[3]).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
-                    <br><span style="color:#666">${x[1]} (R$ ${x[2]})</span>
-                </div>
-                <button class="btn-trash" onclick="excluirAgendamento('${nome}', '${x[3]}')" title="Excluir">🗑️</button>
-            </div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
+        document.getElementById('historicoCliente').innerHTML = h.length ? h.map(x => `<div class="history-item"><div><strong>${new Date(x[3]).toLocaleDateString()}</strong> - ${new Date(x[3]).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}<br><span style="color:#666">${x[1]} (R$ ${x[2]})</span></div><button class="btn-trash" onclick="excluirAgendamento('${nome}', '${x[3]}')" title="Excluir">🗑️</button></div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
     }
 
-    function renderizarMeses() { const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]; document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('') }
-    function mudarMes(i) { mesAtual=i; switchView('view-cal'); renderizarMeses(); renderizarCalendario(i); }
-    function renderizarCalendario(m) { const g=document.getElementById('gridDias'); g.innerHTML=""; document.getElementById('tituloMes').innerText=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m]; const d=new Date(anoAtual,m+1,0).getDate(); for(let i=1;i<=d;i++){let c=db.agenda.filter(a=>{let x=new Date(a[3]);return x.getDate()===i&&x.getMonth()===m&&x.getFullYear()===anoAtual}).length;g.innerHTML+=`<div class="cal-day ${c>0?'has-event':''}" onclick="abrirDia(${i})">${i} ${c>0?`<div class="badge-day">${c}</div>`:''}</div>`} }
-    function renderizarListaClientes() { const b=document.getElementById('buscaCli').value.toLowerCase(); document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item"><span style="flex:1;cursor:pointer;font-weight:bold" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')">${c[0]}</span><button class="btn-quick-book" onclick="abrirBooking(null,'${c[0]}','${c[1]}')">📅</button></div>`).join('') }
-    function renderizarConfig() { document.getElementById('msg-conf').value=db.config[0][1]; document.getElementById('msg-lemb').value=db.config[1][1]; document.getElementById('a-ser').innerHTML=db.servicos.map(s=>`<option value="${s[0]}" data-p="${s[1]}" data-d="${s[2]}">${s[0]}</option>`).join(''); document.getElementById('l-cli').innerHTML=db.clientes.map(c=>`<option value="${c[0]}">`).join(''); document.getElementById('list-ser').innerHTML=db.servicos.map(s=>`<div style="border-bottom:1px solid #eee; padding:5px; font-size:12px; display:flex; justify-content:space-between"><span>${s[0]}</span><div><button onclick="edSer('${s[0]}',${s[1]},${s[2]})" style="font-size:10px;padding:2px 5px">ED</button><button onclick="excluirServico('${s[0]}')" style="font-size:10px;padding:2px 5px;background:none;border:none;cursor:pointer">🗑️</button></div></div>`).join(''); autoPreco(); }
+    function filtroFin(periodo) {
+        document.querySelectorAll('.btn-fin').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-fin-' + periodo).classList.add('active');
+        let total = 0, count = 0, itens = [], agora = new Date();
+        db.agenda.forEach(a => {
+            let data = new Date(a[3]), val = parseFloat(a[2]) || 0, include = false;
+            if (periodo === 'ano' && data.getFullYear() === agora.getFullYear()) include = true;
+            if (periodo === 'mes' && data.getMonth() === agora.getMonth() && data.getFullYear() === agora.getFullYear()) include = true;
+            if (periodo === 'semana') { let diff = (data - agora) / (1000 * 60 * 60 * 24); if (diff > -7 && diff < 7) include = true; }
+            if (include) { total += val; count++; itens.push({d: data, v: val, c: a[0]}); }
+        });
+        document.getElementById('fin-total-rs').innerText = `R$ ${total.toFixed(2)}`;
+        document.getElementById('fin-total-qtd').innerText = count;
+        itens.sort((a,b) => b.d - a.d);
+        document.getElementById('fin-lista').innerHTML = itens.map(i => `<div class="fin-list-item"><span>${i.d.toLocaleDateString()} - ${i.c}</span><strong>R$ ${i.v}</strong></div>`).join('');
+    }
+
+    function gerarCor(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);let c='#';for(let i=0;i<3;i++)c+=('00'+Math.floor(((h>>(i*8))&0xFF)+300)/2).toString(16).substr(-2);return c}
+    function renderizarMeses(){const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('')}
+    function mudarMes(i){mesAtual=i;switchView('view-cal');renderizarMeses();renderizarCalendario(i)}
+    function renderizarListaClientes(){const b=document.getElementById('buscaCli').value.toLowerCase();document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item"><span style="flex:1;cursor:pointer;font-weight:bold" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')">${c[0]}</span><button class="btn-quick-book" onclick="abrirBooking(null,'${c[0]}','${c[1]}')">📅</button></div>`).join('')}
+    function renderizarConfig(){document.getElementById('msg-conf').value=db.config[0][1];document.getElementById('msg-lemb').value=db.config[1][1];document.getElementById('a-ser').innerHTML=db.servicos.map(s=>`<option value="${s[0]}" data-p="${s[1]}" data-d="${s[2]}">${s[0]}</option>`).join('');document.getElementById('l-cli').innerHTML=db.clientes.map(c=>`<option value="${c[0]}">`).join('');document.getElementById('list-ser').innerHTML=db.servicos.map(s=>`<div style="border-bottom:1px solid #eee; padding:5px; font-size:12px; display:flex; justify-content:space-between"><span>${s[0]}</span><div><button onclick="edSer('${s[0]}',${s[1]},${s[2]})" style="font-size:10px;padding:2px 5px">ED</button><button onclick="excluirServico('${s[0]}')" style="font-size:10px;padding:2px 5px;background:none;border:none;cursor:pointer">🗑️</button></div></div>`).join('');autoPreco()}
+    function abrirNovoCliente(){document.getElementById('detalheCliente').classList.remove('hidden');document.getElementById('edit-cli-nome').value="";document.getElementById('edit-cli-nome').removeAttribute('readonly');document.getElementById('edit-cli-nome').style.background="white";document.getElementById('edit-cli-whats').value="";document.getElementById('historicoCliente').innerHTML="";document.getElementById('stat-gasto').innerText="--";document.getElementById('stat-qtd').innerText="--"}
+    function fecharDia(){document.getElementById('modalDia').style.display='none'}
+    function fecharBooking(){document.getElementById('overlay').style.display='none';document.getElementById('modalBooking').style.display='none'}
+    function switchView(id){['view-cal','view-cli','view-fin','view-conf'].forEach(v=>document.getElementById(v).classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+    function abrirBooking(d,n,w){document.getElementById('overlay').style.display='block';document.getElementById('modalBooking').style.display='block';document.getElementById('a-data').value=d||"";document.getElementById('a-cli').value=n||"";document.getElementById('a-whats').value=w||"";if(n&&!w)autoWhats()}
+    function formatarWhatsApp(n){let l=n.toString().replace(/\D/g,'');if(l.length==8||l.length==9)return "5551"+l;if(l.length==10||l.length==11)return "55"+l;return l}
+    function autoWhats(){let c=db.clientes.find(x=>x[0].toLowerCase()===document.getElementById('a-cli').value.toLowerCase());if(c)document.getElementById('a-whats').value=c[1]}
+    function autoPreco(){let s=document.getElementById('a-ser').selectedOptions[0];if(s){document.getElementById('a-val').value=s.dataset.p;document.getElementById('a-dur').value=s.dataset.d}}
+    function edSer(n,p,d){document.getElementById('s-nome').value=n;document.getElementById('s-preco').value=p;document.getElementById('s-dur-base').value=d;document.getElementById('s-antigo').value=n;switchView('view-conf')}
     
-    function abrirNovoCliente() { document.getElementById('detalheCliente').classList.remove('hidden'); document.getElementById('titDetalhe').innerText="Novo Cadastro"; document.getElementById('edit-cli-nome').value=""; document.getElementById('edit-cli-nome').removeAttribute('readonly'); document.getElementById('edit-cli-nome').style.background="white"; document.getElementById('edit-cli-whats').value=""; document.getElementById('historicoCliente').innerHTML=""; document.getElementById('stat-gasto').innerText="--"; document.getElementById('stat-qtd').innerText="--"; }
-    function fecharDia() { document.getElementById('modalDia').style.display='none'; }
-    function fecharBooking() { document.getElementById('overlay').style.display='none'; document.getElementById('modalBooking').style.display='none'; }
-    function switchView(id) { ['view-cal','view-cli','view-fin','view-conf'].forEach(v=>document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-    function abrirBooking(d,n,w) { document.getElementById('overlay').style.display='block'; document.getElementById('modalBooking').style.display='block'; document.getElementById('a-data').value=d||""; document.getElementById('a-cli').value=n||""; document.getElementById('a-whats').value=w||""; if(n&&!w)autoWhats(); }
-    function formatarWhatsApp(n) { let l=n.toString().replace(/\D/g,''); if(l.length==8||l.length==9)return "5551"+l; if(l.length==10||l.length==11)return "55"+l; return l; }
-    function autoWhats() { let c=db.clientes.find(x=>x[0].toLowerCase()===document.getElementById('a-cli').value.toLowerCase()); if(c)document.getElementById('a-whats').value=c[1]; }
-    function autoPreco() { let s=document.getElementById('a-ser').selectedOptions[0]; if(s){document.getElementById('a-val').value=s.dataset.p;document.getElementById('a-dur').value=s.dataset.d;} }
-    function edSer(n,p,d) { document.getElementById('s-nome').value=n; document.getElementById('s-preco').value=p; document.getElementById('s-dur-base').value=d; document.getElementById('s-antigo').value=n; switchView('view-conf'); }
-    
-    async function salvarAge() { let w=formatarWhatsApp(document.getElementById('a-whats').value); let d={acao:"agendar",cliente:document.getElementById('a-cli').value,servico:document.getElementById('a-ser').value,valor:document.getElementById('a-val').value,duracao:document.getElementById('a-dur').value,dataHora:document.getElementById('a-data').value,whats:w}; const r=await fetch(URL_API,{method:'POST',body:JSON.stringify(d)}); const t=await r.text(); if(t.includes("ERRO"))alert(t);else{alert("OK!");enviarZap(d.cliente,d.servico,w,d.dataHora,'Confirmacao');fecharBooking();carregar(new Date(d.dataHora).getDate())} }
-    async function excluirAgendamento(n,d) { if(!confirm("Excluir?"))return; const r=await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirAgendamento",cliente:n,dataHora:d})}); alert(await r.text()); if(!document.getElementById('detalheCliente').classList.contains('hidden')){carregar();setTimeout(()=>abrirDetalheCliente(n,document.getElementById('edit-cli-whats').value),1000)}else{carregar(new Date(d).getDate())} }
-    async function excluirServico(n) { if(!confirm("Excluir?"))return; await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirServico",nome:n})}); alert("Excluido!"); carregar(); }
-    async function salvarEdicaoCliente() { let n=document.getElementById('edit-cli-nome').value,w=formatarWhatsApp(document.getElementById('edit-cli-whats').value); await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarCliente",nome:n,whats:w})}); alert("Salvo!"); carregar(); }
-    async function salvarSer() { await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarServico",nome:document.getElementById('s-nome').value,preco:document.getElementById('s-preco').value,duracao:document.getElementById('s-dur-base').value,nomeAntigo:document.getElementById('s-antigo').value})}); alert("Salvo!"); carregar(); }
-    async function salvarMsg(t) { await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarConfig",tipo:t,msg:t==='Confirmacao'?document.getElementById('msg-conf').value:document.getElementById('msg-lemb').value})}); alert("Salvo!") }
-    function enviarZap(c,s,w,d,t) { let txt=(t==='Lembrete'?document.getElementById('msg-lemb').value:document.getElementById('msg-conf').value).replace('{cliente}',c).replace('{servico}',s).replace('{data}',new Date(d).toLocaleDateString()).replace('{hora}',new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})); window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=${encodeURIComponent(txt)}`); }
-
-    window.onload = function() { carregar(); }
-</script>
-</body>
-</html>"; 
-    let db = { servicos: [], clientes: [], agenda: [], config: [] };
-    let anoAtual = new Date().getFullYear();
-    let mesAtual = new Date().getMonth();
-    const HORA_INICIO = 8; const HORA_FIM = 20; const INTERVALO = 15;
-
-    async function carregar(diaParaReabrir = null) {
-        const res = await fetch(URL_API);
-        db = await res.json();
-        renderizarMeses();
-        renderizarCalendario(mesAtual);
-        renderizarConfig();
-        renderizarListaClientes();
-        if (diaParaReabrir) abrirDia(diaParaReabrir);
-    }
-
-    function gerarCor(nome) {
-        let hash = 0; for (let i = 0; i < nome.length; i++) { hash = nome.charCodeAt(i) + ((hash << 5) - hash); }
-        let cor = '#'; for (let i = 0; i < 3; i++) { let value = (hash >> (i * 8)) & 0xFF; value = Math.floor((value + 300) / 2); cor += ('00' + value.toString(16)).substr(-2); }
-        return cor;
-    }
-
-    function abrirDia(dia) {
-        document.getElementById('modalDia').style.display = 'block';
-        document.getElementById('tituloDia').innerText = `Dia ${dia}/${mesAtual+1}`;
-        const container = document.getElementById('listaSlots'); container.innerHTML = "";
-        const agendamentosDia = db.agenda.filter(a => { let d = new Date(a[3]); return d.getDate() === dia && d.getMonth() === mesAtual && d.getFullYear() === anoAtual; });
-        let horaAtual = new Date(anoAtual, mesAtual, dia, HORA_INICIO, 0, 0);
-        let fimDoDia = new Date(anoAtual, mesAtual, dia, HORA_FIM, 0, 0);
-
-        while (horaAtual < fimDoDia) {
-            let horaStr = horaAtual.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let ocupante = agendamentosDia.find(a => { let ini = new Date(a[3]); let fim = new Date(a[4]); return horaAtual >= ini && horaAtual < fim; });
-            let htmlSlot = "";
-            
-            if (ocupante) {
-                let corFundo = gerarCor(ocupante[0]);
-                htmlSlot = `<div class="slot-ocupado" style="background:${corFundo}">
-                    <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px">${ocupante[0]}</span>
-                    <div style="display:flex; gap:5px; align-items:center">
-                        <button onclick="enviarZap('${ocupante[0]}','${ocupante[1]}','${ocupante[5]}','${ocupante[3]}','Lembrete')" class="btn-zap">📱</button>
-                        <button onclick="excluirAgendamento('${ocupante[0]}','${ocupante[3]}')" class="btn-trash" title="Excluir">🗑️</button>
-                    </div>
-                </div>`;
-            } else {
-                let isoDate = new Date(horaAtual.getTime() - (horaAtual.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
-                htmlSlot = `<button class="btn-agendar-mini" onclick="abrirBooking('${isoDate}')">➕</button>`;
-            }
-            container.innerHTML += `<div class="slot-row"><div class="slot-time">${horaStr}</div><div class="slot-content">${htmlSlot}</div></div>`;
-            horaAtual = new Date(horaAtual.getTime() + INTERVALO * 60000);
-        }
-    }
-
-    // --- CLIENTES COM STATS E HISTÓRICO ---
-    function abrirDetalheCliente(nome, whats) {
-        document.getElementById('detalheCliente').classList.remove('hidden');
-        document.getElementById('titDetalhe').innerText = "Editar Cliente";
-        document.getElementById('edit-cli-nome').value = nome;
-        document.getElementById('edit-cli-nome').setAttribute('readonly', true);
-        document.getElementById('edit-cli-nome').style.background = "#eee";
-        document.getElementById('edit-cli-whats').value = whats;
-        
-        const h = db.agenda.filter(a => a[0] === nome).sort((a,b) => new Date(b[3]) - new Date(a[3]));
-        
-        let totalVal = h.reduce((acc, item) => {
-            let v = parseFloat(String(item[2]).replace('R$','').trim()) || 0;
-            return acc + v;
-        }, 0);
-
-        document.getElementById('stat-gasto').innerText = `R$ ${totalVal.toFixed(2)}`;
-        document.getElementById('stat-qtd').innerText = h.length;
-
-        document.getElementById('historicoCliente').innerHTML = h.length ? h.map(x => `
-            <div class="history-item">
-                <div>
-                    <strong>${new Date(x[3]).toLocaleDateString()}</strong> - ${new Date(x[3]).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
-                    <br><span style="color:#666">${x[1]} (R$ ${x[2]})</span>
-                </div>
-                <button class="btn-trash" onclick="excluirAgendamento('${nome}', '${x[3]}')" title="Excluir">🗑️</button>
-            </div>`).join('') : "<p style='font-size:11px; text-align:center'>Sem histórico.</p>";
-    }
-
-    function renderizarMeses() { const m=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]; document.getElementById('listaMeses').innerHTML=m.map((x,i)=>{let c=db.agenda.filter(a=>new Date(a[3]).getMonth()===i&&new Date(a[3]).getFullYear()===anoAtual).length;let b=c>0?`<span class="badge">${c}</span>`:'';return `<button class="month-btn ${i===mesAtual?'active':''}" onclick="mudarMes(${i})"><span>${x}</span>${b}</button>`}).join('') }
-    function mudarMes(i) { mesAtual=i; switchView('view-cal'); renderizarMeses(); renderizarCalendario(i); }
-    function renderizarCalendario(m) { const g=document.getElementById('gridDias'); g.innerHTML=""; document.getElementById('tituloMes').innerText=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m]; const d=new Date(anoAtual,m+1,0).getDate(); for(let i=1;i<=d;i++){let c=db.agenda.filter(a=>{let x=new Date(a[3]);return x.getDate()===i&&x.getMonth()===m&&x.getFullYear()===anoAtual}).length;g.innerHTML+=`<div class="cal-day ${c>0?'has-event':''}" onclick="abrirDia(${i})">${i} ${c>0?`<div class="badge-day">${c}</div>`:''}</div>`} }
-    function renderizarListaClientes() { const b=document.getElementById('buscaCli').value.toLowerCase(); document.getElementById('listaDeClientes').innerHTML=db.clientes.filter(c=>c[0].toLowerCase().includes(b)).map(c=>`<div class="client-item"><span style="flex:1;cursor:pointer;font-weight:bold" onclick="abrirDetalheCliente('${c[0]}','${c[1]}')">${c[0]}</span><button class="btn-quick-book" onclick="abrirBooking(null,'${c[0]}','${c[1]}')">📅</button></div>`).join('') }
-    function renderizarConfig() { document.getElementById('msg-conf').value=db.config[0][1]; document.getElementById('msg-lemb').value=db.config[1][1]; document.getElementById('a-ser').innerHTML=db.servicos.map(s=>`<option value="${s[0]}" data-p="${s[1]}" data-d="${s[2]}">${s[0]}</option>`).join(''); document.getElementById('l-cli').innerHTML=db.clientes.map(c=>`<option value="${c[0]}">`).join(''); document.getElementById('list-ser').innerHTML=db.servicos.map(s=>`<div style="border-bottom:1px solid #eee; padding:5px; font-size:12px; display:flex; justify-content:space-between"><span>${s[0]}</span><div><button onclick="edSer('${s[0]}',${s[1]},${s[2]})" style="font-size:10px;padding:2px 5px">ED</button><button onclick="excluirServico('${s[0]}')" style="font-size:10px;padding:2px 5px;background:none;border:none;cursor:pointer">🗑️</button></div></div>`).join(''); autoPreco(); }
-    
-    function abrirNovoCliente() { document.getElementById('detalheCliente').classList.remove('hidden'); document.getElementById('titDetalhe').innerText="Novo Cadastro"; document.getElementById('edit-cli-nome').value=""; document.getElementById('edit-cli-nome').removeAttribute('readonly'); document.getElementById('edit-cli-nome').style.background="white"; document.getElementById('edit-cli-whats').value=""; document.getElementById('historicoCliente').innerHTML=""; document.getElementById('stat-gasto').innerText="--"; document.getElementById('stat-qtd').innerText="--"; }
-    function fecharDia() { document.getElementById('modalDia').style.display='none'; }
-    function fecharBooking() { document.getElementById('overlay').style.display='none'; document.getElementById('modalBooking').style.display='none'; }
-    function switchView(id) { ['view-cal','view-cli','view-fin','view-conf'].forEach(v=>document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-    function abrirBooking(d,n,w) { document.getElementById('overlay').style.display='block'; document.getElementById('modalBooking').style.display='block'; document.getElementById('a-data').value=d||""; document.getElementById('a-cli').value=n||""; document.getElementById('a-whats').value=w||""; if(n&&!w)autoWhats(); }
-    function formatarWhatsApp(n) { let l=n.toString().replace(/\D/g,''); if(l.length==8||l.length==9)return "5551"+l; if(l.length==10||l.length==11)return "55"+l; return l; }
-    function autoWhats() { let c=db.clientes.find(x=>x[0].toLowerCase()===document.getElementById('a-cli').value.toLowerCase()); if(c)document.getElementById('a-whats').value=c[1]; }
-    function autoPreco() { let s=document.getElementById('a-ser').selectedOptions[0]; if(s){document.getElementById('a-val').value=s.dataset.p;document.getElementById('a-dur').value=s.dataset.d;} }
-    function edSer(n,p,d) { document.getElementById('s-nome').value=n; document.getElementById('s-preco').value=p; document.getElementById('s-dur-base').value=d; document.getElementById('s-antigo').value=n; switchView('view-conf'); }
-    
-    async function salvarAge() { let w=formatarWhatsApp(document.getElementById('a-whats').value); let d={acao:"agendar",cliente:document.getElementById('a-cli').value,servico:document.getElementById('a-ser').value,valor:document.getElementById('a-val').value,duracao:document.getElementById('a-dur').value,dataHora:document.getElementById('a-data').value,whats:w}; const r=await fetch(URL_API,{method:'POST',body:JSON.stringify(d)}); const t=await r.text(); if(t.includes("ERRO"))alert(t);else{alert("OK!");enviarZap(d.cliente,d.servico,w,d.dataHora,'Confirmacao');fecharBooking();carregar(new Date(d.dataHora).getDate())} }
-    async function excluirAgendamento(n,d) { if(!confirm("Excluir?"))return; const r=await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirAgendamento",cliente:n,dataHora:d})}); alert(await r.text()); if(!document.getElementById('detalheCliente').classList.contains('hidden')){carregar();setTimeout(()=>abrirDetalheCliente(n,document.getElementById('edit-cli-whats').value),1000)}else{carregar(new Date(d).getDate())} }
-    async function excluirServico(n) { if(!confirm("Excluir?"))return; await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirServico",nome:n})}); alert("Excluido!"); carregar(); }
-    async function salvarEdicaoCliente() { let n=document.getElementById('edit-cli-nome').value,w=formatarWhatsApp(document.getElementById('edit-cli-whats').value); await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarCliente",nome:n,whats:w})}); alert("Salvo!"); carregar(); }
-    async function salvarSer() { await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarServico",nome:document.getElementById('s-nome').value,preco:document.getElementById('s-preco').value,duracao:document.getElementById('s-dur-base').value,nomeAntigo:document.getElementById('s-antigo').value})}); alert("Salvo!"); carregar(); }
-    async function salvarMsg(t) { await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarConfig",tipo:t,msg:t==='Confirmacao'?document.getElementById('msg-conf').value:document.getElementById('msg-lemb').value})}); alert("Salvo!") }
-    function enviarZap(c,s,w,d,t) { let txt=(t==='Lembrete'?document.getElementById('msg-lemb').value:document.getElementById('msg-conf').value).replace('{cliente}',c).replace('{servico}',s).replace('{data}',new Date(d).toLocaleDateString()).replace('{hora}',new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})); window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=${encodeURIComponent(txt)}`); }
+    async function salvarAge(){let w=formatarWhatsApp(document.getElementById('a-whats').value);let d={acao:"agendar",cliente:document.getElementById('a-cli').value,servico:document.getElementById('a-ser').value,valor:document.getElementById('a-val').value,duracao:document.getElementById('a-dur').value,dataHora:document.getElementById('a-data').value,whats:w};const r=await fetch(URL_API,{method:'POST',body:JSON.stringify(d)});const t=await r.text();if(t.includes("ERRO"))alert(t);else{alert("OK!");enviarZap(d.cliente,d.servico,w,d.dataHora,'Confirmacao');fecharBooking();carregar(new Date(d.dataHora).getDate())}}
+    async function excluirAgendamento(n,d){if(!confirm("Excluir?"))return;const r=await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirAgendamento",cliente:n,dataHora:d})});alert(await r.text());if(!document.getElementById('detalheCliente').classList.contains('hidden')){carregar();setTimeout(()=>abrirDetalheCliente(n,document.getElementById('edit-cli-whats').value),1000)}else{carregar(new Date(d).getDate())}}
+    async function excluirServico(n){if(!confirm("Excluir?"))return;await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"excluirServico",nome:n})});alert("Excluido!");carregar()}
+    async function salvarEdicaoCliente(){let n=document.getElementById('edit-cli-nome').value,w=formatarWhatsApp(document.getElementById('edit-cli-whats').value);await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarCliente",nome:n,whats:w})});alert("Salvo!");carregar()}
+    async function salvarSer(){await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarServico",nome:document.getElementById('s-nome').value,preco:document.getElementById('s-preco').value,duracao:document.getElementById('s-dur-base').value,nomeAntigo:document.getElementById('s-antigo').value})});alert("Salvo!");carregar()}
+    async function salvarMsg(t){await fetch(URL_API,{method:'POST',body:JSON.stringify({acao:"salvarConfig",tipo:t,msg:t==='Confirmacao'?document.getElementById('msg-conf').value:document.getElementById('msg-lemb').value})});alert("Salvo!")}
+    function enviarZap(c,s,w,d,t){let txt=(t==='Lembrete'?document.getElementById('msg-lemb').value:document.getElementById('msg-conf').value).replace('{cliente}',c).replace('{servico}',s).replace('{data}',new Date(d).toLocaleDateString()).replace('{hora}',new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));window.open(`https://wa.me/${w.replace(/\D/g,'')}?text=${encodeURIComponent(txt)}`)}
 
     window.onload = function() { carregar(); }
 </script>
